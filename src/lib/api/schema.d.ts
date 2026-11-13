@@ -58,9 +58,11 @@ export interface paths {
         };
         /**
          * Check service health
-         * @description Used by load balancers to decide whether to send traffic here. Reports
-         *     `degraded` with **503** when the event loop is lagging (CPU-bound work is
-         *     blocking it), so traffic moves to a healthy instance.
+         * @description Used by load balancers to decide whether to send traffic here (a
+         *     readiness check). Reports `degraded` with **503** when this instance
+         *     can't serve requests well: MongoDB doesn't answer a ping within 2
+         *     seconds, or the event loop is lagging (CPU-bound work is blocking it),
+         *     so traffic moves to a healthy instance. Never cached.
          */
         get: operations["getHealth"];
         put?: never;
@@ -121,11 +123,19 @@ export interface components {
         Health: {
             /** @enum {string} */
             status: "ok" | "degraded";
+            /** @description The result of pinging MongoDB. */
+            database: {
+                /** @enum {string} */
+                status: "up" | "down";
+                /** @description Ping round trip, or `null` when the ping failed or timed out. */
+                latencyMs: number | null;
+            };
             /** @description How long callbacks waited for the event loop, recently. */
             eventLoopDelayMs: {
                 p50: number;
                 p99: number;
             };
+            /** @description Seconds since this process started. */
             uptimeSeconds: number;
         };
         /** @description An error, in RFC 9457 Problem Details format. */
@@ -319,18 +329,48 @@ export interface operations {
             /** @description The service is healthy. */
             200: {
                 headers: {
+                    "Cache-Control"?: "no-store";
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "status": "ok",
+                     *       "database": {
+                     *         "status": "up",
+                     *         "latencyMs": 32
+                     *       },
+                     *       "eventLoopDelayMs": {
+                     *         "p50": 10.2,
+                     *         "p99": 12.6
+                     *       },
+                     *       "uptimeSeconds": 3600.5
+                     *     }
+                     */
                     "application/json": components["schemas"]["Health"];
                 };
             };
-            /** @description The service is overloaded; send traffic elsewhere. */
+            /** @description The service is degraded; send traffic elsewhere. */
             503: {
                 headers: {
+                    "Cache-Control"?: "no-store";
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "status": "degraded",
+                     *       "database": {
+                     *         "status": "down",
+                     *         "latencyMs": null
+                     *       },
+                     *       "eventLoopDelayMs": {
+                     *         "p50": 10.1,
+                     *         "p99": 11.8
+                     *       },
+                     *       "uptimeSeconds": 3600.5
+                     *     }
+                     */
                     "application/json": components["schemas"]["Health"];
                 };
             };

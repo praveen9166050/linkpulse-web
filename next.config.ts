@@ -18,7 +18,11 @@ const nextConfig: NextConfig = {
      * CORS during development; CORS on the API comes later (step U4).
      */
     rewrites() {
-        return [{ source: "/api/v1/:path*", destination: `${API_BASE_URL}/api/v1/:path*` }];
+        return [
+            { source: "/api/v1/:path*", destination: `${API_BASE_URL}/api/v1/:path*` },
+            // The API's health check sits at its root, outside /api/v1.
+            { source: "/health", destination: `${API_BASE_URL}/health` },
+        ];
     },
 
     turbopack: {

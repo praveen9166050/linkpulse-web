@@ -1,11 +1,9 @@
 /** The top bar: brand on the left; the API it talks to and the theme menu on the right. */
 import { Link2Icon } from "lucide-react";
-import { StatusDot } from "@/components/status-dot";
+import { ApiStatusPill } from "@/components/health/api-status-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { API_BASE_URL } from "@/lib/config";
 
 export function SiteHeader() {
     return (
@@ -22,19 +20,7 @@ export function SiteHeader() {
                 </div>
 
                 <div className="ml-auto flex items-center gap-2">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="hidden items-center gap-2 rounded-md border bg-background px-2.5 py-1 sm:flex">
-                                <StatusDot tone="neutral" />
-                                <code className="font-mono text-xs text-muted-foreground">
-                                    {API_BASE_URL}
-                                </code>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            The API this dashboard talks to. Not connected yet.
-                        </TooltipContent>
-                    </Tooltip>
+                    <ApiStatusPill />
                     <Separator orientation="vertical" className="hidden h-5 sm:block" />
                     <ThemeToggle />
                 </div>
