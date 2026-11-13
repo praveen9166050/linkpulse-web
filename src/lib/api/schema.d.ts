@@ -34,6 +34,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dev/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live request log (development only)
+         * @description **Exists only when the API runs with `DEV_TOOLS=true`; otherwise 404.**
+         *     Never enable in production: it exposes every request path.
+         *
+         *     A Server-Sent Events stream that never ends. It first replays the most
+         *     recent requests (up to 50), then sends one event per request as the
+         *     API handles it:
+         *
+         *     ```
+         *     id: 42
+         *     event: request
+         *     data: {"id":42,"at":"2026-11-14T10:00:00.000Z","method":"GET","path":"/health","status":200,"durationMs":3.21}
+         *     ```
+         *
+         *     Comment lines (`: heartbeat`) keep the connection alive every 15 s. A
+         *     client that reads too slowly misses events rather than slowing the API.
+         */
+        get: operations["streamRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/{code}": {
         parameters: {
             query?: never;
@@ -146,6 +180,21 @@ export interface components {
             items: components["schemas"]["Link"][];
             /** @description Pass as `cursor` to get the next page; `null` on the last page. */
             nextCursor: string | null;
+        };
+        /** @description One handled request, as sent in the live request log. */
+        RequestLogEntry: {
+            /** @description Increasing number; also the SSE event id. */
+            id: number;
+            /**
+             * Format: date-time
+             * @description When the response finished.
+             */
+            at: string;
+            method: string;
+            /** @description The path, without the query string. */
+            path: string;
+            status: number;
+            durationMs: number;
         };
         Health: {
             /** @enum {string} */
@@ -371,6 +420,27 @@ export interface operations {
             400: components["responses"]["ValidationError"];
             409: components["responses"]["CodeTaken"];
             413: components["responses"]["BodyTooLarge"];
+        };
+    };
+    streamRequests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The event stream. Each event's `data` is a `RequestLogEntry`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
         };
     };
     followLink: {

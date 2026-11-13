@@ -7,9 +7,9 @@ browse them, and watch the API handle each request.
 | Panel | Status | Uses |
 | --- | --- | --- |
 | Create a short link | Working | `POST /api/v1/links` |
-| API status | Waiting for the API | `GET /health` |
-| Links | Waiting for the API | `GET /api/v1/links` |
-| Live request log | Waiting for the API | Server-Sent Events stream |
+| API status | Working | `GET /health` |
+| Links | Working | `GET /api/v1/links` |
+| Live request log | Working | `GET /api/v1/dev/requests` (Server-Sent Events) |
 
 ## Tech stack
 
@@ -29,8 +29,13 @@ npm ci           # install exactly what package-lock.json lists
 npm run dev      # http://localhost:3001
 ```
 
-The dashboard runs on **port 3001**; the API keeps 3000. In development, Next.js forwards
-`/api/v1/*` to the API (see `next.config.ts`), so the browser talks to one origin.
+The dashboard runs on **port 3001**; the API keeps 3000. The browser calls the API
+**directly**, so the API's `.env` must allow this origin, and turn on the live request log:
+
+```ini
+CORS_ORIGINS=http://localhost:3001
+DEV_TOOLS=true
+```
 
 To point it at another API, set `NEXT_PUBLIC_API_BASE_URL` (default `http://127.0.0.1:3000`).
 
@@ -48,12 +53,10 @@ To point it at another API, set `NEXT_PUBLIC_API_BASE_URL` (default `http://127.
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| API status says **Unreachable**, but the API is running | The dev server is using a stale `next.config.ts` (it can miss a reload when branches change quickly) | Restart `npm run dev` |
-| `/health` or `/api/v1/...` answers 404 from Next.js | Same: no proxy rule matched | Restart `npm run dev`; check `next.config.ts` has the rule |
+| API status says **Unreachable**, but the API is running | The API doesn't allow this origin, so the browser blocks its answers (DevTools console: "blocked by CORS policy") | Add `CORS_ORIGINS=http://localhost:3001` to the API's `.env` and restart it |
+| Live request log says **Unavailable** | The API runs without dev tools | Add `DEV_TOOLS=true` to the API's `.env` and restart it |
 | **Unreachable**, and the API isn't running | Nothing on port 3000 | Start the API: `npm start` in `../linkpulse` |
-
-To find which hop fails, compare the API directly (`curl http://127.0.0.1:3000/health`) with the
-proxy (`curl http://localhost:3001/health`).
+| Something behaves as if old after switching branches | The dev server kept a stale `next.config.ts` | Restart `npm run dev` |
 
 ## Docs
 
