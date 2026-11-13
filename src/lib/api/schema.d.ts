@@ -11,7 +11,15 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List links, newest first
+         * @description One page of links, newest first. To get the next page, pass the
+         *     response's `nextCursor` back as `cursor`; `nextCursor` is `null` on the
+         *     last page. The cursor is opaque: clients must not build or edit it.
+         *     Pages stay stable while links are created (no duplicates, nothing
+         *     skipped), and every page costs the same, however deep.
+         */
+        get: operations["listLinks"];
         put?: never;
         /**
          * Create a short link
@@ -120,6 +128,25 @@ export interface components {
              */
             expiresAt: string | null;
         };
+        /**
+         * @example {
+         *       "items": [
+         *         {
+         *           "code": "aZ3kP9q",
+         *           "shortUrl": "http://localhost:3000/aZ3kP9q",
+         *           "url": "https://example.com/articles/2026/how-dns-works",
+         *           "createdAt": "2026-11-14T09:30:00.000Z",
+         *           "expiresAt": null
+         *         }
+         *       ],
+         *       "nextCursor": "eyJjcmVhdGVkQXQiOiIyMDI2LTExLTE0VDA5OjMwOjAwLjAwMFoiLCJjb2RlIjoiYVoza1A5cSJ9"
+         *     }
+         */
+        LinkPage: {
+            items: components["schemas"]["Link"][];
+            /** @description Pass as `cursor` to get the next page; `null` on the last page. */
+            nextCursor: string | null;
+        };
         Health: {
             /** @enum {string} */
             status: "ok" | "degraded";
@@ -202,6 +229,35 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
+        /**
+         * @description A query parameter is invalid (`/problems/validation-error`, with one
+         *     `errors` entry per parameter): `limit` out of range, a `cursor` that
+         *     wasn't produced by this API, or an unknown parameter.
+         */
+        InvalidQuery: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "type": "/problems/validation-error",
+                 *       "title": "Invalid request",
+                 *       "status": 400,
+                 *       "detail": "One or more query parameters are invalid.",
+                 *       "instance": "/api/v1/links",
+                 *       "errors": [
+                 *         {
+                 *           "field": "limit",
+                 *           "kind": "out_of_range",
+                 *           "message": "Must be a whole number from 1 to 100 (got \"500\")."
+                 *         }
+                 *       ]
+                 *     }
+                 */
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
         /** @description The custom code is already in use. */
         CodeTaken: {
             headers: {
@@ -264,6 +320,32 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listLinks: {
+        parameters: {
+            query?: {
+                /** @description How many links per page. */
+                limit?: number;
+                /** @description The `nextCursor` of the previous page. Omit for the first page. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of links. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkPage"];
+                };
+            };
+            400: components["responses"]["InvalidQuery"];
+        };
+    };
     createLink: {
         parameters: {
             query?: never;

@@ -10,6 +10,7 @@ import { RequestLogCard } from "@/components/dashboard/request-log-card";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { HealthProvider } from "@/components/health/health-provider";
 import { HealthStatCard } from "@/components/health/health-stat-card";
+import { LinksProvider } from "@/components/links/links-provider";
 import { SiteHeader } from "@/components/site-header";
 
 export default function DashboardPage() {
@@ -42,14 +43,17 @@ export default function DashboardPage() {
                     />
                 </section>
 
-                <div className="grid gap-6 lg:grid-cols-5">
-                    <div className="lg:col-span-2">
-                        <CreateLinkCard />
+                {/* One links list, shared: the form adds to it, the table shows it. */}
+                <LinksProvider>
+                    <div className="grid gap-6 lg:grid-cols-5">
+                        <div className="lg:col-span-2">
+                            <CreateLinkCard />
+                        </div>
+                        <div className="lg:col-span-3">
+                            <LinksCard />
+                        </div>
                     </div>
-                    <div className="lg:col-span-3">
-                        <LinksCard />
-                    </div>
-                </div>
+                </LinksProvider>
 
                 <RequestLogCard />
             </main>
