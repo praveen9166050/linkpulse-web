@@ -3,17 +3,19 @@
  * live request log. A Server Component that only arranges the panels; each
  * panel owns its own data and, when interactive, is a client component.
  */
-import { ActivityIcon, GaugeIcon, LinkIcon } from "lucide-react";
+import { GaugeIcon, LinkIcon } from "lucide-react";
 import { CreateLinkCard } from "@/components/dashboard/create-link-card";
 import { LinksCard } from "@/components/dashboard/links-card";
 import { RequestLogCard } from "@/components/dashboard/request-log-card";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { HealthProvider } from "@/components/health/health-provider";
+import { HealthStatCard } from "@/components/health/health-stat-card";
 import { SiteHeader } from "@/components/site-header";
-import { StatusDot } from "@/components/status-dot";
 
 export default function DashboardPage() {
     return (
-        <>
+        // One health poll, shared by the header pill and the status card.
+        <HealthProvider>
             <SiteHeader />
 
             <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-8 sm:px-6">
@@ -25,17 +27,7 @@ export default function DashboardPage() {
                 </div>
 
                 <section aria-label="Key numbers" className="grid gap-4 sm:grid-cols-3">
-                    <StatCard
-                        icon={ActivityIcon}
-                        label="API status"
-                        value={
-                            <span className="flex items-center gap-2 text-base font-medium text-muted-foreground">
-                                <StatusDot tone="neutral" />
-                                Not connected
-                            </span>
-                        }
-                        hint="Checks GET /health"
-                    />
+                    <HealthStatCard />
                     <StatCard
                         icon={LinkIcon}
                         label="Short links"
@@ -61,6 +53,6 @@ export default function DashboardPage() {
 
                 <RequestLogCard />
             </main>
-        </>
+        </HealthProvider>
     );
 }

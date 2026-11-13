@@ -15,3 +15,4 @@ export const apiClient = createClient<paths>({ baseUrl: "" });
 export type Link = components["schemas"]["Link"];
 export type CreateLinkRequest = components["schemas"]["CreateLinkRequest"];
 export type Problem = components["schemas"]["Problem"];
+export type Health = components["schemas"]["Health"];
