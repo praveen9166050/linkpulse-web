@@ -74,7 +74,7 @@ async function fetchHealth(signal: AbortSignal): Promise<HealthState> {
     }
 }
 
-/** Checks the shape before trusting it: the proxy answers HTML when the API is down. */
+/** Checks the shape before trusting it: whatever answers on the API's port may not be the API. */
 function isHealth(value: unknown): value is Health {
     return (
         typeof value === "object" &&
