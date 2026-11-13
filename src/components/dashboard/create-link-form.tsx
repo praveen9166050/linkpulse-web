@@ -20,6 +20,7 @@ import {
     UrlField,
 } from "@/components/dashboard/create-link-fields";
 import { CreatedLink } from "@/components/dashboard/created-link";
+import { useLinks } from "@/components/links/links-provider";
 import { apiClient, type Link, type Problem } from "@/lib/api/client";
 import { type FormErrors, toFormErrors } from "@/lib/api/problems";
 import { API_BASE_URL } from "@/lib/config";
@@ -37,7 +38,16 @@ type CreateLinkState =
 const INITIAL_STATE: CreateLinkState = { status: "idle" };
 
 export function CreateLinkForm() {
-    const [state, formAction, isPending] = useActionState(createLink, INITIAL_STATE);
+    const { add } = useLinks();
+    const [state, formAction, isPending] = useActionState(
+        async (previous: CreateLinkState, form: FormData) => {
+            const next = await createLink(previous, form);
+            // Show it in the links table at once: no refetch needed.
+            if (next.status === "created") add(next.link);
+            return next;
+        },
+        INITIAL_STATE,
+    );
 
     const errors = state.status === "rejected" ? state.errors : undefined;
     // Kept after a rejection, so nothing typed is lost; cleared after success.

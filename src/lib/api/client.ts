@@ -16,3 +16,4 @@ export type Link = components["schemas"]["Link"];
 export type CreateLinkRequest = components["schemas"]["CreateLinkRequest"];
 export type Problem = components["schemas"]["Problem"];
 export type Health = components["schemas"]["Health"];
+export type LinkPage = components["schemas"]["LinkPage"];

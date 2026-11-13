@@ -1,29 +1,11 @@
-"use client";
-
 /** The link just created: its short URL with Copy and Open, and where it leads. */
-import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { ExternalLinkIcon } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Link } from "@/lib/api/client";
 
-const COPIED_FOR_MS = 1500;
-
 export function CreatedLink({ link }: { readonly link: Link }) {
-    const [copied, setCopied] = useState(false);
-
-    async function copy() {
-        try {
-            await navigator.clipboard.writeText(link.shortUrl);
-            setCopied(true);
-            toast.success("Copied to clipboard");
-            setTimeout(() => setCopied(false), COPIED_FOR_MS);
-        } catch {
-            toast.error("Couldn't copy: the browser blocked clipboard access");
-        }
-    }
-
     return (
         <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
             <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
@@ -39,19 +21,7 @@ export function CreatedLink({ link }: { readonly link: Link }) {
                     {link.shortUrl}
                 </a>
                 <div className="ml-auto flex shrink-0 gap-1">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                onClick={() => void copy()}
-                                aria-label="Copy the short link"
-                            >
-                                {copied ? <CheckIcon /> : <CopyIcon />}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{copied ? "Copied" : "Copy"}</TooltipContent>
-                    </Tooltip>
+                    <CopyButton value={link.shortUrl} label="Copy the short link" />
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="ghost" size="icon-sm" asChild>
