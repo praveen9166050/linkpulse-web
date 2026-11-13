@@ -44,6 +44,17 @@ To point it at another API, set `NEXT_PUBLIC_API_BASE_URL` (default `http://127.
 | `npm run check` | Format check, lint and typecheck. **Run before every push** |
 | `npm run format` / `npm run lint:fix` | Fix formatting / auto-fixable lint problems |
 
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| API status says **Unreachable**, but the API is running | The dev server is using a stale `next.config.ts` (it can miss a reload when branches change quickly) | Restart `npm run dev` |
+| `/health` or `/api/v1/...` answers 404 from Next.js | Same: no proxy rule matched | Restart `npm run dev`; check `next.config.ts` has the rule |
+| **Unreachable**, and the API isn't running | Nothing on port 3000 | Start the API: `npm start` in `../linkpulse` |
+
+To find which hop fails, compare the API directly (`curl http://127.0.0.1:3000/health`) with the
+proxy (`curl http://localhost:3001/health`).
+
 ## Docs
 
 - [Guides](docs/guides/README.md): how the dashboard is built and how to work on it.
